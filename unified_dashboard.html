@@ -1,0 +1,2681 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нэгдсэн Удирдлагын Дашбоард</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Styles.css-ийн агуулга энд эхэлнэ */
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a54d3;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #f72585;
+            --info: #560bad;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --white: #ffffff;
+            
+            --background-light: #f4f7f6;
+            --card-background: #ffffff;
+            --sidebar-background: #2c3e50;
+            --sidebar-text: #ecf0f1;
+            --sidebar-active: #34495e;
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.15);
+            
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-light);
+            line-height: 1.6;
+            color: var(--dark);
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--sidebar-background);
+            color: var(--sidebar-text);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-md);
+            position: fixed;
+            height: 100%;
+            z-index: 100;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--white);
+        }
+
+        .sidebar .logo i {
+            color: var(--primary);
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            flex-grow: 1;
+        }
+
+        .sidebar nav ul li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar nav ul li a {
+            color: var(--sidebar-text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .sidebar nav ul li a i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .sidebar nav ul li a:hover,
+        .sidebar nav ul li.active a {
+            background-color: var(--sidebar-active);
+            color: var(--success);
+        }
+
+        .sidebar .user-profile {
+            display: flex;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .user-profile img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            border: 2px solid var(--primary);
+        }
+
+        .sidebar .user-profile .user-info span {
+            display: block;
+            font-weight: 500;
+            color: var(--white);
+        }
+
+        .sidebar .user-profile .user-info small {
+            color: var(--light-gray);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-header {
+            background-color: var(--card-background);
+            padding: 20px 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .main-header h2 {
+            margin: 0;
+            color: var(--dark);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .search-bar {
+            padding: 10px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            outline: none;
+            width: 250px;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--gray);
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 5px;
+            border-radius: 50%;
+        }
+
+        .icon-button:hover {
+            color: var(--primary);
+            background-color: var(--light);
+        }
+
+        /* Overview Cards */
+        .overview-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-icon {
+            font-size: 36px;
+            color: var(--primary);
+            background-color: rgba(67, 97, 238, 0.1);
+            padding: 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+
+        .card-status {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-success { color: var(--success); }
+        .status-info { color: var(--info); }
+        .status-warning { color: var(--warning); }
+        .status-danger { color: var(--danger); }
+        .text-success { color: var(--success); }
+        .text-info { color: var(--info); }
+        .text-warning { color: var(--warning); }
+        .text-danger { color: var(--danger); }
+        .text-primary { color: var(--primary); }
+
+        /* Main Charts and Recent Activities */
+        .main-charts {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+    background-color: var(--card-background);
+    padding: 25px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    height: 400px; /* Тогтмол өндөр */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden; /* График хэтэрвэл дарагдахгүй */
+}
+
+.chart-card h3 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    color: var(--dark);
+    flex-shrink: 0; /* Гарчиг өөрчлөгдөхгүй */
+}
+
+.chart-container {
+    position: relative;
+    flex-grow: 1; /* Боломжит бүх зайг эзлэх */
+    min-height: 300px; /* Хамгийн бага өндөр */
+    width: 100%;
+}
+
+.chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
+/* Тодорхой графикуудад зориулсан нэмэлт стиль */
+#performanceChart {
+    min-height: 350px; /* Илүү том график */
+}
+
+#paymentChart {
+    min-height: 280px; /* Бага өндөртэй график */
+}
+
+.main-charts {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+    align-items: stretch; /* Бүх карт ижил өндөртэй */
+}
+
+.project-charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 1200px) {
+    .chart-card {
+        height: 350px; /* Жижиг дэлгэцэнд бага өндөр */
+    }
+}
+
+@media (max-width: 992px) {
+    .main-charts,
+    .project-charts {
+        grid-template-columns: 1fr; /* Нэг баганад */
+    }
+    
+    .chart-card {
+        height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .chart-card {
+        padding: 15px;
+        height: 280px;
+    }
+    
+    .chart-container {
+        min-height: 250px;
+    }
+}
+
+        .recent-activities {
+            background-color: var(--card-background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+        }
+
+        .recent-activities h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .recent-activities ul {
+            list-style: none;
+        }
+
+        .recent-activities ul li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--gray);
+        }
+
+        .recent-activities ul li:last-child {
+            border-bottom: none;
+        }
+
+        .recent-activities ul li i {
+            font-size: 16px;
+        }
+
+        /* Content Sections for Single Page */
+        .content-section {
+            display: none; /* Hidden by default */
+        }
+
+        .content-section.active {
+            display: block; /* Show active section */
+        }
+
+        /* barilga.html related styles */
+        .milestones {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .milestone {
+            display: flex;
+            align-items: flex-start;
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border-left: 5px solid;
+            border-color: var(--gray);
+        }
+
+        .milestone.completed { border-color: var(--success); }
+        .milestone.current { border-color: var(--info); }
+        .milestone.upcoming { border-color: var(--gray); }
+
+        .milestone-icon {
+            font-size: 28px;
+            margin-right: 15px;
+            padding-top: 5px;
+            color: var(--gray);
+        }
+
+        .milestone.completed .milestone-icon { color: var(--success); }
+        .milestone.current .milestone-icon { color: var(--info); }
+
+        .milestone-info {
+            flex-grow: 1;
+        }
+
+        .milestone-info h4 {
+            margin: 0 0 5px 0;
+            color: var(--dark);
+        }
+
+        .milestone-info .date {
+            font-size: 14px;
+            color: var(--gray);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: var(--light-gray);
+            border-radius: 5px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 5px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .milestone.completed .progress-fill { background-color: var(--success); }
+
+        .progress-text {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .milestone-alert {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        /* gazar.html related styles */
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-controls select,
+        .filter-controls input[type="date"],
+        .filter-controls button {
+            padding: 10px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            outline: none;
+        }
+
+        .filter-controls button {
+            background-color: var(--primary);
+            color: var(--white);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-controls button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .land-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .land-list-header h3 {
+            margin: 0;
+        }
+
+        .view-options button {
+            background: none;
+            border: 1px solid var(--light-gray);
+            color: var(--gray);
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .view-options button.active,
+        .view-options button:hover {
+            background-color: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        .land-table-container {
+            overflow-x: auto;
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 20px;
+        }
+
+        .land-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .land-table th, .land-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--light);
+            text-align: left;
+        }
+
+        .land-table th {
+            background-color: var(--background-light);
+            color: var(--dark);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .land-table td {
+            color: var(--gray);
+        }
+
+        .land-table tr:hover {
+            background-color: #f6f9fc;
+        }
+
+        .land-table .status-active { color: var(--success); font-weight: 500; }
+        .land-table .status-pending { color: var(--warning); font-weight: 500; }
+        .land-table .status-expired { color: var(--danger); font-weight: 500; }
+
+        .land-table .action-buttons button {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: var(--transition);
+        }
+
+        .land-table .action-buttons button:hover {
+            color: var(--primary);
+        }
+
+        /* geree.html related styles */
+        .contract-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .contract-metrics .metric-card {
+            background-color: var(--card-background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .contract-metrics .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .contract-metrics .metric-card .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        .contract-metrics .metric-card.total .icon { color: var(--info); }
+        .contract-metrics .metric-card.active .icon { color: var(--success); }
+        .contract-metrics .metric-card.pending .icon { color: var(--warning); }
+        .contract-metrics .metric-card.expired .icon { color: var(--danger); }
+
+        .contract-metrics .metric-card h4 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+            color: var(--gray);
+        }
+
+        .contract-metrics .metric-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .contract-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .contract-list-header h3 {
+            margin: 0;
+            color: var(--dark);
+        }
+
+        .contract-list-header button {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .contract-list-header button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .contract-table-container {
+            overflow-x: auto;
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 20px;
+        }
+
+        .contract-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .contract-table th, .contract-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--light);
+            text-align: left;
+        }
+
+        .contract-table th {
+            background-color: var(--background-light);
+            color: var(--dark);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .contract-table td {
+            color: var(--gray);
+        }
+
+        .contract-table tr:hover {
+            background-color: #f6f9fc;
+        }
+
+        .contract-table .status-active { color: var(--success); }
+        .contract-table .status-pending { color: var(--warning); }
+        .contract-table .status-expired { color: var(--danger); }
+        .contract-table .status-completed { color: var(--info); }
+
+        /* tolbor.html related styles */
+        .payment-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .payment-summary .summary-card {
+            background-color: var(--card-background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+
+        .payment-summary .summary-card .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        .payment-summary .summary-card.total-income .icon { color: var(--success); }
+        .payment-summary .summary-card.pending-payment .icon { color: var(--warning); }
+        .payment-summary .summary-card.overdue-payment .icon { color: var(--danger); }
+        .payment-summary .summary-card.refunds .icon { color: var(--info); }
+
+        .payment-summary .summary-card h4 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: var(--gray);
+        }
+
+        .payment-summary .summary-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .chart-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .payment-table-container {
+            background-color: var(--card-background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            overflow-x: auto;
+        }
+
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .payment-table th, .payment-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--light);
+            text-align: left;
+        }
+
+        .payment-table th {
+            background-color: var(--background-light);
+            color: var(--dark);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .payment-table td {
+            color: var(--gray);
+        }
+
+        .payment-table tr:hover {
+            background-color: #f6f9fc;
+        }
+
+        .payment-table .status-paid { color: var(--success); font-weight: 500; }
+        .payment-table .status-pending { color: var(--warning); font-weight: 500; }
+        .payment-table .status-overdue { color: var(--danger); font-weight: 500; }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .pagination button {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .pagination button:disabled {
+            background-color: var(--light-gray);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+        }
+
+        .pagination span {
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        /* tosol.html related styles */
+        .project-summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .project-summary-cards .summary-card {
+            background-color: var(--card-background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+
+        .project-summary-cards .summary-card .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        .project-summary-cards .summary-card.total-projects .icon { color: var(--info); }
+        .project-summary-cards .summary-card.active-projects .icon { color: var(--success); }
+        .project-summary-cards .summary-card.completed-projects .icon { color: var(--primary); }
+        .project-summary-cards .summary-card.on-hold-projects .icon { color: var(--warning); }
+
+        .project-summary-cards .summary-card h4 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: var(--gray);
+        }
+
+        .project-summary-cards .summary-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .project-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .project-charts .chart-card {
+            background-color: var(--card-background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+        }
+
+        .project-charts .chart-card h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .project-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .project-list-header h3 {
+            margin: 0;
+            color: var(--dark);
+        }
+
+        .project-list-header button {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .project-list-header button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .project-table-container {
+            background-color: var(--card-background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            overflow-x: auto;
+        }
+
+        .project-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .project-table th, .project-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--light);
+            text-align: left;
+        }
+
+        .project-table th {
+            background-color: var(--background-light);
+            color: var(--dark);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .project-table td {
+            color: var(--gray);
+        }
+
+        .project-table tr:hover {
+            background-color: #f6f9fc;
+        }
+
+        .project-table .status-active { color: var(--success); font-weight: 500; }
+        .project-table .status-completed { color: var(--primary); font-weight: 500; }
+        .project-table .status-on-hold { color: var(--warning); font-weight: 500; }
+        .project-table .status-cancelled { color: var(--danger); font-weight: 500; }
+
+        /* Utility classes for colors */
+        .text-success { color: var(--success); }
+        .text-danger { color: var(--danger); }
+        .text-warning { color: var(--warning); }
+        .text-info { color: var(--info); }
+        .text-primary { color: var(--primary); }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+            .sidebar.mobile-visible {
+                width: 250px;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .main-charts {
+                grid-template-columns: 1fr;
+            }
+            .overview-cards {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+            .main-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .search-bar {
+                flex-grow: 1;
+                width: auto;
+            }
+            .sidebar-toggle {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 15px;
+            }
+            .overview-cards {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            .card-icon {
+                font-size: 30px;
+                padding: 10px;
+            }
+            .card-value {
+                font-size: 24px;
+            }
+            .land-table th, .land-table td,
+            .contract-table th, .contract-table td,
+            .payment-table th, .payment-table td,
+            .project-table th, .project-table td {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+        }
+        /* Construction Section Styles */
+#barilga-section {
+    padding: 20px;
+}
+
+.construction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.construction-header h2 {
+    color: var(--dark);
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.construction-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-secondary {
+    background-color: white;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.btn-secondary:hover {
+    background-color: #f0f4ff;
+}
+
+.construction-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+}
+
+.bg-primary { background-color: var(--primary); }
+.bg-success { background-color: var(--success); }
+.bg-warning { background-color: var(--warning); }
+.bg-danger { background-color: var(--danger); }
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    display: block;
+    margin: 5px 0;
+}
+
+.stat-change {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.positive { color: var(--success); }
+.negative { color: var(--danger); }
+.neutral { color: var(--gray); }
+
+.construction-charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.chart-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.chart-header h3 {
+    font-size: 18px;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chart-filter {
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid var(--light-gray);
+    background: white;
+}
+
+.chart-container {
+    height: 300px;
+    position: relative;
+}
+
+.milestones-section {
+    margin-bottom: 30px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-header h3 {
+    font-size: 20px;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-sm {
+    padding: 8px 15px;
+    font-size: 14px;
+}
+
+.milestones-timeline {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Timeline styles would go here */
+
+.projects-table-section {
+    margin-bottom: 30px;
+}
+
+.table-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.search-input {
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: 1px solid var(--light-gray);
+    min-width: 200px;
+}
+
+.status-filter {
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: 1px solid var(--light-gray);
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.projects-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.projects-table th, 
+.projects-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--light);
+}
+
+.projects-table th {
+    background-color: var(--background-light);
+    color: var(--dark);
+    font-weight: 500;
+}
+
+.projects-table tr:hover {
+    background-color: #f8fafc;
+}
+
+.progress-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background-color: var(--light-gray);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--primary);
+    border-radius: 4px;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-active {
+    background-color: rgba(76, 201, 240, 0.1);
+    color: var(--success);
+}
+
+.status-completed {
+    background-color: rgba(67, 97, 238, 0.1);
+    color: var(--primary);
+}
+
+.status-on-hold {
+    background-color: rgba(248, 150, 30, 0.1);
+    color: var(--warning);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: var(--gray);
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.action-btn:hover {
+    color: var(--primary);
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+    .construction-charts {
+        grid-template-columns: 1fr;
+    }
+    
+    .construction-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .table-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .stat-icon {
+        margin-bottom: 10px;
+    }
+}
+        /* Styles.css-ийн агуулга энд дуусна */
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-cubes"></i>
+                <span>Нэгдсэн Удирдлага</span>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active" data-section="dashboard-section"><a href="#dashboard-section"><i class="fas fa-home"></i> Үндсэн Дашбоард</a></li>
+                    <li data-section="barilga-section"><a href="#barilga-section"><i class="fas fa-hard-hat"></i> Барилга</a></li>
+                    <li data-section="gazar-section"><a href="#gazar-section"><i class="fas fa-map-marked-alt"></i> Газар</a></li>
+                    <li data-section="geree-section"><a href="#geree-section"><i class="fas fa-file-contract"></i> Гэрээ</a></li>
+                    <li data-section="tolbor-section"><a href="#tolbor-section"><i class="fas fa-money-check-alt"></i> Төлбөр</a></li>
+                    <li data-section="tosol-section"><a href="#tosol-section"><i class="fas fa-project-diagram"></i> Төсөл</a></li>
+                </ul>
+            </nav>
+            <div class="user-profile">
+                <img src="https://randomuser.me/api/portraits/men/4.jpg" alt="User Avatar">
+                <div class="user-info">
+                    <span>Бат-Очир</span>
+                    <small>Админ</small>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-title">
+                    <h2 id="current-page-title">Үндсэн Дашбоард</h2>
+                </div>
+                <div class="header-actions">
+                    <input type="text" placeholder="Хайх..." class="search-bar">
+                    <button class="icon-button"><i class="fas fa-bell"></i></button>
+                    <button class="icon-button"><i class="fas fa-cog"></i></button>
+                </div>
+            </header>
+
+            <section id="dashboard-section" class="content-section active">
+                <section class="overview-cards">
+                    <div class="card" data-target-section="barilga-section">
+                        <div class="card-icon"><i class="fas fa-hard-hat"></i></div>
+                        <div class="card-info">
+                            <h3>Дууссан Барилгын Төсөл</h3>
+                            <p class="card-value" id="completed-construction">N/A</p>
+                            <span class="card-status status-success"><i class="fas fa-arrow-up"></i> 15%</span>
+                        </div>
+                    </div>
+                    <div class="card" data-target-section="gazar-section">
+                        <div class="card-icon"><i class="fas fa-map-marked-alt"></i></div>
+                        <div class="card-info">
+                            <h3>Нийт Газрын Мэдээлэл</h3>
+                            <p class="card-value" id="total-land">N/A</p>
+                            <span class="card-status status-info"><i class="fas fa-info-circle"></i> 5 шинэ</span>
+                        </div>
+                    </div>
+                    <div class="card" data-target-section="geree-section">
+                        <div class="card-icon"><i class="fas fa-file-contract"></i></div>
+                        <div class="card-info">
+                            <h3>Идэвхтэй Гэрээ</h3>
+                            <p class="card-value" id="active-contracts">N/A</p>
+                            <span class="card-status status-warning"><i class="fas fa-exclamation-triangle"></i> 3 удахгүй дуусна</span>
+                        </div>
+                    </div>
+                    <div class="card" data-target-section="tolbor-section">
+                        <div class="card-icon"><i class="fas fa-money-check-alt"></i></div>
+                        <div class="card-info">
+                            <h3>Хугацаа Хэтэрсэн Төлбөр</h3>
+                            <p class="card-value" id="overdue-payments">N/A</p>
+                            <span class="card-status status-danger"><i class="fas fa-exclamation-circle"></i> Өндөр эрсдэлтэй</span>
+                        </div>
+                    </div>
+                    <div class="card" data-target-section="tosol-section">
+                        <div class="card-icon"><i class="fas fa-project-diagram"></i></div>
+                        <div class="card-info">
+                            <h3>Идэвхтэй Төсөл</h3>
+                            <p class="card-value" id="active-projects">N/A</p>
+                            <span class="card-status status-success"><i class="fas fa-arrow-up"></i> 7% өссөн</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="main-charts">
+                    <div class="chart-card">
+                        <h3>Ерөнхий Статистик</h3>
+                        <canvas id="mainDashboardChart"></canvas>
+                    </div>
+                    <div class="recent-activities">
+                        <h3>Сүүлийн Үеийн Үйл Ажиллагаа</h3>
+                        <ul>
+                            <li><i class="fas fa-check-circle text-success"></i> Барилгын төсөл А дууслаа. <small>2 цагийн өмнө</small></li>
+                            <li><i class="fas fa-plus-circle text-info"></i> Шинэ газрын бүртгэл нэмэгдэв. <small>1 өдрийн өмнө</small></li>
+                            <li><i class="fas fa-file-signature text-warning"></i> Гэрээ С-ийн хугацаа ойртож байна. <small>3 өдрийн өмнө</small></li>
+                            <li><i class="fas fa-exclamation-triangle text-danger"></i> Төлбөр 101 хэтэрсэн. <small>5 өдрийн өмнө</small></li>
+                            <li><i class="fas fa-chart-line text-primary"></i> Төсөл D-ийн явц шинэчлэгдэв. <small>1 долоо хоногийн өмнө</small></li>
+                        </ul>
+                    </div>
+                </section>
+            </section>
+
+            <section id="barilga-section" class="content-section">
+    <div class="construction-overview">
+        <div class="construction-header">
+            <h2><i class="fas fa-hard-hat"></i> Барилгын явцын удирдлагын систем</h2>
+            <div class="construction-actions">
+                <button class="btn-primary"><i class="fas fa-plus"></i> Шинэ төсөл</button>
+                <button class="btn-secondary"><i class="fas fa-file-export"></i> Экспортлох</button>
+            </div>
+        </div>
+
+        <div class="construction-stats">
+            <div class="stat-card">
+                <div class="stat-icon bg-primary">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Нийт төслүүд</h3>
+                    <span class="stat-value" id="total-projects">25</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Дууссан төслүүд</h3>
+                    <span class="stat-value" id="completed-projects">12</span>
+                    <span class="stat-change positive"><i class="fas fa-arrow-up"></i> 15%</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon bg-warning">
+                    <i class="fas fa-hammer"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Явцтай төслүүд</h3>
+                    <span class="stat-value" id="in-progress-projects">10</span>
+                    <span class="stat-change negative"><i class="fas fa-arrow-down"></i> 5%</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon bg-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Ослын тоо</h3>
+                    <span class="stat-value" id="accidents">3</span>
+                    <span class="stat-change neutral"><i class="fas fa-equals"></i> 0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="construction-charts">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3><i class="fas fa-chart-bar"></i> Төслийн явцын график</h3>
+                <select class="chart-filter">
+                    <option>Сүүлийн 3 сар</option>
+                    <option>Сүүлийн 6 сар</option>
+                    <option>Сүүлийн 12 сар</option>
+                </select>
+            </div>
+            <div class="chart-container">
+                <canvas id="constructionProgressChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3><i class="fas fa-chart-pie"></i> Төслийн төлвийн хуваарь</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="constructionStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="milestones-section">
+        <div class="section-header">
+            <h3><i class="fas fa-map-marked-alt"></i> Үе шатууд</h3>
+            <button class="btn-primary btn-sm"><i class="fas fa-plus"></i> Шинэ үе шат</button>
+        </div>
+        
+        <div class="milestones-timeline">
+            <!-- Timeline items will be dynamically added here -->
+        </div>
+    </div>
+
+    <div class="projects-table-section">
+        <div class="section-header">
+            <h3><i class="fas fa-list-ul"></i> Төслийн жагсаалт</h3>
+            <div class="table-actions">
+                <input type="text" placeholder="Хайх..." class="search-input">
+                <select class="status-filter">
+                    <option value="all">Бүх төлөв</option>
+                    <option value="active">Идэвхтэй</option>
+                    <option value="completed">Дууссан</option>
+                    <option value="on-hold">Түр зогссон</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="projects-table">
+                <thead>
+                    <tr>
+                        <th>Төслийн нэр</th>
+                        <th>Эхлэх огноо</th>
+                        <th>Дуусах огноо</th>
+                        <th>Явц</th>
+                        <th>Төлөв</th>
+                        <th>Үйлдэл</th>
+                    </tr>
+                </thead>
+                <tbody id="projects-list">
+                    <!-- Projects will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+            <section id="gazar-section" class="content-section hidden">
+                <section class="overview-cards">
+                    <div class="card total-land">
+                        <div class="card-icon"><i class="fas fa-globe-americas"></i></div>
+                        <div class="card-info">
+                            <h3>Нийт Газрын Хэмжээ</h3>
+                            <p class="card-value" id="total-land-gazar">N/A</p>
+                            <span class="card-status status-info">ha</span>
+                        </div>
+                    </div>
+                    <div class="card ownership-rights">
+                        <div class="card-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                        <div class="card-info">
+                            <h3>Эзэмшлийн Эрхтэй Газар</h3>
+                            <p class="card-value" id="ownership-rights-gazar">N/A</p>
+                            <span class="card-status status-success">бүртгэгдсэн</span>
+                        </div>
+                    </div>
+                    <div class="card usage-rights">
+                        <div class="card-icon"><i class="fas fa-file-contract"></i></div>
+                        <div class="card-info">
+                            <h3>Ашиглалтын Эрхтэй Газар</h3>
+                            <p class="card-value" id="usage-rights-gazar">N/A</p>
+                            <span class="card-status status-warning">хүчин төгөлдөр</span>
+                        </div>
+                    </div>
+                    <div class="card state-owned">
+                        <div class="card-icon"><i class="fas fa-building"></i></div>
+                        <div class="card-info">
+                            <h3>Улсын Өмчийн Газар</h3>
+                            <p class="card-value" id="state-owned-gazar">N/A</p>
+                            <span class="card-status status-info">хэсэг</span>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="land-list-header">
+                    <h3>Газрын Мэдээллийн Жагсаалт</h3>
+                    <div class="filter-controls">
+                        <select id="filter-type">
+                            <option value="all">Бүгд</option>
+                            <option value="ownership">Эзэмшлийн эрхтэй</option>
+                            <option value="usage">Ашиглалтын эрхтэй</option>
+                            <option value="state">Улсын өмчийн</option>
+                        </select>
+                        <input type="date" id="filter-date">
+                        <button onclick="applyFiltersGazar()">Шүүх</button>
+                    </div>
+                    <div class="view-options">
+                        <button class="active"><i class="fas fa-list"></i> Жагсаалт</button>
+                        <button><i class="fas fa-th-large"></i> Сүлжээ</button>
+                        <button id="add-land-btn"><i class="fas fa-plus"></i> Нэмэх</button>
+                        <button id="export-land-btn"><i class="fas fa-file-export"></i> Экспортлох</button>
+                    </div>
+                </div>
+
+                <div class="land-table-container">
+                    <table class="land-table">
+                        <thead>
+                            <tr>
+                                <th>Газрын дугаар</th>
+                                <th>Байршил</th>
+                                <th>Төрөл</th>
+                                <th>Талбай (га)</th>
+                                <th>Эзэмшигч/Ашиглагч</th>
+                                <th>Огноо</th>
+                                <th>Төлөв</th>
+                                <th>Үйлдэл</th>
+                            </tr>
+                        </thead>
+                        <tbody id="land-list-body">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="geree-section" class="content-section hidden">
+                <div class="contract-metrics">
+                    <div class="metric-card total">
+                        <div class="icon"><i class="fas fa-file-contract"></i></div>
+                        <h4>Нийт гэрээ</h4>
+                        <span class="value" id="total-contracts">N/A</span>
+                    </div>
+                    <div class="metric-card active">
+                        <div class="icon"><i class="fas fa-check-circle"></i></div>
+                        <h4>Идэвхтэй гэрээ</h4>
+                        <span class="value" id="active-contracts-geree">N/A</span>
+                    </div>
+                    <div class="metric-card pending">
+                        <div class="icon"><i class="fas fa-hourglass-half"></i></div>
+                        <h4>Хүлээгдэж буй гэрээ</h4>
+                        <span class="value" id="pending-contracts">N/A</span>
+                    </div>
+                    <div class="metric-card expired">
+                        <div class="icon"><i class="fas fa-times-circle"></i></div>
+                        <h4>Хугацаа дууссан гэрээ</h4>
+                        <span class="value" id="expired-contracts">N/A</span>
+                    </div>
+                </div>
+
+                <div class="main-charts">
+                    <div class="chart-card">
+                        <h3>Гэрээний Төрлөөр</h3>
+                        <canvas id="contractTypeChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Гэрээний Төлөвөөр</h3>
+                        <canvas id="contractStatusChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="contract-list-header">
+                    <h3>Сүүлийн үеийн гэрээнүүд</h3>
+                    <button><i class="fas fa-plus"></i> Шинэ гэрээ нэмэх</button>
+                </div>
+                <div class="contract-table-container">
+                    <table class="contract-table">
+                        <thead>
+                            <tr>
+                                <th>Гэрээний ID</th>
+                                <th>Нэр</th>
+                                <th>Харилцагч</th>
+                                <th>Эхлэх огноо</th>
+                                <th>Дуусах огноо</th>
+                                <th>Төлөв</th>
+                                <th>Үйлдэл</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contract-list-body">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="tolbor-section" class="content-section hidden">
+                <div class="payment-summary">
+                    <div class="summary-card total-income">
+                        <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
+                        <h4>Нийт орлого</h4>
+                        <span class="value" id="total-income">0₮</span>
+                    </div>
+                    <div class="summary-card pending-payment">
+                        <div class="icon"><i class="fas fa-hourglass-half"></i></div>
+                        <h4>Хүлээгдэж буй төлбөр</h4>
+                        <span class="value" id="pending-payment">0₮</span>
+                    </div>
+                    <div class="summary-card overdue-payment">
+                        <div class="icon"><i class="fas fa-exclamation-circle"></i></div>
+                        <h4>Хугацаа хэтэрсэн төлбөр</h4>
+                        <span class="value" id="overdue-payment">0₮</span>
+                    </div>
+                    <div class="summary-card refunds">
+                        <div class="icon"><i class="fas fa-undo-alt"></i></div>
+                        <h4>Буцаан олголт</h4>
+                        <span class="value" id="refunds">0₮</span>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <div class="chart-card">
+                        <h3>Төлбөрийн Гүйцэтгэл (Сар бүр)</h3>
+                        <canvas id="paymentChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="land-list-header">
+                    <h3>Төлбөрийн Жагсаалт</h3>
+                    <div class="filter-controls">
+                        <select id="payment-filter-status">
+                            <option value="all">Бүгд</option>
+                            <option value="paid">Төлөгдсөн</option>
+                            <option value="pending">Хүлээгдэж буй</option>
+                            <option value="overdue">Хугацаа хэтэрсэн</option>
+                        </select>
+                        <input type="date" id="payment-filter-date">
+                        <button onclick="applyPaymentFilters()">Шүүх</button>
+                    </div>
+                    <div class="view-options">
+                        <button id="add-payment-btn"><i class="fas fa-plus"></i> Шинэ төлбөр нэмэх</button>
+                    </div>
+                </div>
+
+                <div class="payment-table-container">
+                    <table class="payment-table">
+                        <thead>
+                            <tr>
+                                <th>Төлбөрийн ID</th>
+                                <th>Төрөл</th>
+                                <th>Хэмжээ</th>
+                                <th>Огноо</th>
+                                <th>Дуусах огноо</th>
+                                <th>Төлөв</th>
+                                <th>Үйлдэл</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payment-list-body">
+                            </tbody>
+                    </table>
+                    <div class="pagination">
+                        <button id="prev-page-payment"><i class="fas fa-chevron-left"></i> Өмнөх</button>
+                        <span id="page-info-payment">Хуудас 1/1</span>
+                        <button id="next-page-payment">Дараагийн <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tosol-section" class="content-section hidden">
+                <div class="project-summary-cards">
+                    <div class="summary-card total-projects">
+                        <div class="icon"><i class="fas fa-layer-group"></i></div>
+                        <h4>Нийт төслүүд</h4>
+                        <span class="value" id="total-projects-tosol">0</span>
+                    </div>
+                    <div class="summary-card active-projects">
+                        <div class="icon"><i class="fas fa-check-circle"></i></div>
+                        <h4>Идэвхтэй төслүүд</h4>
+                        <span class="value" id="active-projects-tosol">0</span>
+                    </div>
+                    <div class="summary-card completed-projects">
+                        <div class="icon"><i class="fas fa-project-diagram"></i></div>
+                        <h4>Дууссан төслүүд</h4>
+                        <span class="value" id="completed-projects-tosol">0</span>
+                    </div>
+                    <div class="summary-card on-hold-projects">
+                        <div class="icon"><i class="fas fa-pause-circle"></i></div>
+                        <h4>Түр зогсоосон төслүүд</h4>
+                        <span class="value" id="on-hold-projects-tosol">0</span>
+                    </div>
+                </div>
+
+                <div class="project-charts">
+                    <div class="chart-card">
+                        <h3>Төслийн төлвийн байдал</h3>
+                        <canvas id="projectStatusDonutChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Төслийн төрөл</h3>
+                        <canvas id="projectTypeBarChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="project-list-header">
+                    <h3>Төслийн жагсаалт</h3>
+                    <button><i class="fas fa-plus"></i> Шинэ төсөл үүсгэх</button>
+                </div>
+                <div class="project-table-container">
+                    <table class="project-table">
+                        <thead>
+                            <tr>
+                                <th>Төслийн ID</th>
+                                <th>Нэр</th>
+                                <th>Эхлэх огноо</th>
+                                <th>Дуусах огноо</th>
+                                <th>Төлөв</th>
+                                <th>Явц (%)</th>
+                                <th>Үйлдэл</th>
+                            </tr>
+                        </thead>
+                        <tbody id="project-list-body">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <div class="card chart-card">
+    <div class="card-header">
+        <h3><i class="fas fa-chart-line"></i> Гүйцэтгэлийн график</h3>
+    </div>
+    <div class="card-body">
+        <div class="chart-container"> <canvas id="performanceChart"></canvas>
+        </div>
+    </div>
+    </div>
+
+    <div class="chart-card">
+    <h3><i class="fas fa-chart-line"></i> Гүйцэтгэлийн график</h3>
+    <div class="chart-container">
+        <canvas id="performanceChart"></canvas>
+    </div>
+</div>
+
+    <script>
+        // *** Global State for Charts ***
+        const charts = {}; // To store chart instances and prevent recreation
+
+        // *** Helper function to select elements ***
+        const selector = (id) => document.querySelector(id);
+        const selectorAll = (id) => document.querySelectorAll(id);
+
+        // *** Section Switching Logic ***
+        const sidebarLinks = selectorAll('.sidebar nav ul li');
+        const contentSections = selectorAll('.content-section');
+        const pageTitle = selector('#current-page-title');
+
+        function showSection(sectionId) {
+            contentSections.forEach(section => {
+                section.classList.remove('active');
+            });
+            selector(`#${sectionId}`).classList.add('active');
+
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.section === sectionId) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Update header title
+            const titleMap = {
+                'dashboard-section': 'Үндсэн Дашбоард',
+                'barilga-section': 'Барилгын явцын удирдлагын систем',
+                'gazar-section': 'Газрын мэдээллийн дашбоард',
+                'geree-section': 'Гэрээний удирдлага | Дашбоард',
+                'tolbor-section': 'ТӨЛБӨРИЙН ДАШБОАРД',
+                'tosol-section': 'Төслийн Мэдээллийн Дашбоард'
+            };
+            pageTitle.textContent = titleMap[sectionId] || 'Дашбоард';
+
+            // Initialize charts for the newly active section
+            initializeSectionCharts(sectionId);
+        }
+
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.dataset.section;
+                showSection(sectionId);
+            });
+        });
+
+        // Handle clicks on dashboard overview cards
+        selectorAll('.overview-cards .card').forEach(card => {
+            card.addEventListener('click', function() {
+                const targetSection = this.dataset.targetSection;
+                if (targetSection) {
+                    showSection(targetSection);
+                }
+            });
+        });
+
+        // *** Chart Initialization Functions ***
+        function createChart(chartId, type, data, options) {
+            if (charts[chartId]) {
+                charts[chartId].destroy(); // Destroy existing chart before recreating
+            }
+            const ctx = selector(`#${chartId}`).getContext('2d');
+            charts[chartId] = new Chart(ctx, { type, data, options });
+        }
+
+        function initializeMainDashboardChart() {
+            createChart('mainDashboardChart', 'line', {
+                labels: ['Нэгдүгээр сар', 'Хоёрдугаар сар', 'Гуравдугаар сар', 'Дөрөвдүгээр сар', 'Тавдугаар сар', 'Зургаадугаар сар'],
+                datasets: [
+                    {
+                        label: 'Төслийн Явц',
+                        data: [65, 59, 80, 81, 56, 70],
+                        borderColor: 'var(--primary)',
+                        backgroundColor: 'rgba(67, 97, 238, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Үйл Ажиллагаа',
+                        data: [20, 30, 25, 40, 35, 50],
+                        borderColor: 'var(--success)',
+                        backgroundColor: 'rgba(76, 201, 240, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            }, { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } });
+        }
+
+        function initializeProjectProgressChart() {
+            createChart('projectProgressChart', 'bar', {
+                labels: ['Төсөл А', 'Төсөл Б', 'Төсөл В', 'Төсөл Г', 'Төсөл Д'],
+                datasets: [{
+                    label: 'Явц (%)',
+                    data: [90, 75, 60, 40, 20],
+                    backgroundColor: [
+                        'var(--success)', 'var(--primary)', 'var(--info)', 'var(--warning)', 'var(--danger)'
+                    ],
+                    borderColor: 'rgba(255, 255, 255, 0.8)',
+                    borderWidth: 1
+                }]
+            }, {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            });
+        }
+
+        function initializeContractCharts() {
+            createChart('contractTypeChart', 'doughnut', {
+                labels: ['Барилга', 'Үйлчилгээ', 'Худалдаа', 'Зөвлөх'],
+                datasets: [{
+                    data: [30, 20, 15, 10],
+                    backgroundColor: ['var(--primary)', 'var(--success)', 'var(--warning)', 'var(--info)'],
+                    hoverOffset: 4
+                }]
+            }, { responsive: true, maintainAspectRatio: false });
+
+            createChart('contractStatusChart', 'bar', {
+                labels: ['Идэвхтэй', 'Хүлээгдэж буй', 'Хугацаа дууссан', 'Дууссан'],
+                datasets: [{
+                    label: 'Гэрээний тоо',
+                    data: [48, 15, 7, 20],
+                    backgroundColor: ['var(--success)', 'var(--warning)', 'var(--danger)', 'var(--info)'],
+                    borderColor: 'rgba(255, 255, 255, 0.8)',
+                    borderWidth: 1
+                }]
+            }, { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } });
+        }
+
+        function initializePaymentChart() {
+            createChart('paymentChart', 'bar', {
+                labels: ['1-р сар', '2-р сар', '3-р сар', '4-р сар', '5-р сар', '6-р сар'],
+                datasets: [
+                    {
+                        label: 'Төлөгдсөн',
+                        data: [12000000, 15000000, 10000000, 18000000, 13000000, 20000000],
+                        backgroundColor: 'var(--success)',
+                        stack: 'Stack 0',
+                    },
+                    {
+                        label: 'Хүлээгдэж буй',
+                        data: [2000000, 3000000, 1500000, 2500000, 1000000, 3500000],
+                        backgroundColor: 'var(--warning)',
+                        stack: 'Stack 0',
+                    },
+                    {
+                        label: 'Хугацаа хэтэрсэн',
+                        data: [500000, 800000, 300000, 1000000, 600000, 200000],
+                        backgroundColor: 'var(--danger)',
+                        stack: 'Stack 0',
+                    }
+                ]
+            }, {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value / 1000000 + ' сая ₮';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += formatNumber(context.raw) + '₮';
+                                return label;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initializeProjectCharts() {
+            createChart('projectStatusDonutChart', 'doughnut', {
+                labels: ['Идэвхтэй', 'Дууссан', 'Түр зогсоосон', 'Цуцлагдсан'],
+                datasets: [{
+                    data: [15, 12, 3, 1],
+                    backgroundColor: ['var(--success)', 'var(--primary)', 'var(--warning)', 'var(--danger)'],
+                    hoverOffset: 4
+                }]
+            }, { responsive: true, maintainAspectRatio: false });
+
+            createChart('projectTypeBarChart', 'bar', {
+                labels: ['Орон сууц', 'Оффис', 'Үйлдвэрлэл', 'Замын төсөл', 'Шинэ суурьшил', 'Бусад'],
+                datasets: [{
+                    label: 'Төслийн тоо',
+                    data: [10, 5, 3, 3, 2, 1],
+                    backgroundColor: ['var(--primary)', 'var(--info)', 'var(--success)', 'var(--warning)', 'var(--secondary)', 'var(--gray)'],
+                    borderColor: 'rgba(255, 255, 255, 0.8)',
+                    borderWidth: 1
+                }]
+            }, { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } });
+        }
+
+
+        // *** Data Fetching and Update Functions (Simulated) ***
+
+        // Dashboard Data
+        async function fetchDataForDashboardCards() {
+            const barilgaData = { completedProjects: 12 };
+            const gazarData = { totalLand: 75 };
+            const gereeData = { activeContracts: 48 };
+            const tolborData = { overduePayments: 7 };
+            const tosolData = { activeProjects: 25 };
+
+            selector('#completed-construction').textContent = barilgaData.completedProjects;
+            selector('#total-land').textContent = gazarData.totalLand;
+            selector('#active-contracts').textContent = gereeData.activeContracts;
+            selector('#overdue-payments').textContent = tolborData.overduePayments;
+            selector('#active-projects').textContent = tosolData.activeProjects;
+        }
+
+        // Barilga Section Data
+        const barilgaProjectData = {
+            totalProjects: 25,
+            completedProjects: 12,
+            inProgressProjects: 10,
+            accidentsCount: 3,
+            milestones: [
+                {
+                    name: 'Суурийн ажил',
+                    startDate: '2023-01-15',
+                    endDate: '2023-03-20',
+                    progress: 100,
+                    status: 'completed',
+                    alert: ''
+                },
+                {
+                    name: 'Үндсэн барилга',
+                    startDate: '2023-04-01',
+                    endDate: '2024-02-28',
+                    progress: 75,
+                    status: 'current',
+                    alert: 'Хугацаа хоцорч магадгүй байна.'
+                },
+                {
+                    name: 'Дотоод засал',
+                    startDate: '2024-03-10',
+                    endDate: '2024-09-30',
+                    progress: 20,
+                    status: 'upcoming',
+                    alert: ''
+                },
+                {
+                    name: 'Гадна тохижилт',
+                    startDate: '2024-10-01',
+                    endDate: '2024-12-15',
+                    progress: 0,
+                    status: 'upcoming',
+                    alert: ''
+                }
+            ]
+        };
+
+        function updateBarilgaMetrics() {
+            selector('#total-projects').textContent = barilgaProjectData.totalProjects;
+            selector('#completed-projects').textContent = barilgaProjectData.completedProjects;
+            selector('#in-progress-projects').textContent = barilgaProjectData.inProgressProjects;
+            selector('#accidents').textContent = barilgaProjectData.accidentsCount;
+            updateMilestones(barilgaProjectData.milestones);
+        }
+
+        function updateMilestones(milestones) {
+            const container = selector('.milestones');
+            container.innerHTML = '';
+
+            milestones.forEach(milestone => {
+                const milestoneElement = document.createElement('div');
+                milestoneElement.className = `milestone ${milestone.status}`;
+                milestoneElement.innerHTML = `
+                    <div class="milestone-icon">
+                        <i class="fas ${milestone.status === 'completed' ? 'fa-check-circle' :
+                                      milestone.status === 'current' ? 'fa-hard-hat' : 'fa-circle'}"></i>
+                    </div>
+                    <div class="milestone-info">
+                        <h4>${milestone.name}</h4>
+                        <span class="date">${milestone.startDate} - ${milestone.endDate}</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${milestone.progress}%;"></div>
+                        </div>
+                        <span class="progress-text">${milestone.progress}% дууссан</span>
+                        ${milestone.alert ? `
+                        <div class="milestone-alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>${milestone.alert}</span>
+                        </div>` : ''}
+                    </div>
+                `;
+                container.appendChild(milestoneElement);
+            });
+        }
+
+        // Gazar Section Data
+        const gazarData = {
+            summary: {
+                totalLand: 7500, // in ha
+                ownershipRights: 50,
+                usageRights: 20,
+                stateOwned: 5
+            },
+            lands: [
+                { id: 'L001', location: 'Улаанбаатар, СБД', type: 'Эзэмшил', area: 1.5, owner: 'А компани', date: '2020-05-10', status: 'Идэвхтэй' },
+                { id: 'L002', location: 'Баянхонгор, БСД', type: 'Ашиглалт', area: 5.2, owner: 'Б иргэн', date: '2021-08-22', status: 'Хүлээгдэж буй' },
+                { id: 'L003', location: 'Дархан, ХД', type: 'Улсын өмч', area: 10.0, owner: 'Төрийн өмч', date: '2019-11-01', status: 'Идэвхтэй' },
+                { id: 'L004', location: 'Эрдэнэт, ӨБД', type: 'Эзэмшил', area: 0.8, owner: 'Г ХХК', date: '2022-03-15', status: 'Хугацаа дууссан' },
+                { id: 'L005', location: 'Ховд, ЖД', type: 'Ашиглалт', area: 2.1, owner: 'Д фермер', date: '2023-01-01', status: 'Идэвхтэй' },
+                { id: 'L006', location: 'Улаанбаатар, ХУД', type: 'Эзэмшил', area: 3.0, owner: 'Е компани', date: '2021-06-20', status: 'Идэвхтэй' },
+                { id: 'L007', location: 'Завхан, СМД', type: 'Улсын өмч', area: 7.5, owner: 'Төрийн өмч', date: '2018-02-28', status: 'Идэвхтэй' },
+            ]
+        };
+
+        let filteredLands = [];
+
+        function updateGazarDashboard() {
+            selector('#total-land-gazar').textContent = formatNumber(gazarData.summary.totalLand);
+            selector('#ownership-rights-gazar').textContent = gazarData.summary.ownershipRights;
+            selector('#usage-rights-gazar').textContent = gazarData.summary.usageRights;
+            selector('#state-owned-gazar').textContent = gazarData.summary.stateOwned;
+            applyFiltersGazar(); // Initial load
+        }
+
+        function applyFiltersGazar() {
+            const filterType = selector('#filter-type').value;
+            const filterDate = selector('#filter-date').value;
+
+            filteredLands = gazarData.lands.filter(land => {
+                const typeMatch = filterType === 'all' || land.type === (filterType === 'ownership' ? 'Эзэмшил' : filterType === 'usage' ? 'Ашиглалт' : 'Улсын өмч');
+                const dateMatch = !filterDate || new Date(land.date) >= new Date(filterDate);
+                return typeMatch && dateMatch;
+            });
+            renderLandTable(filteredLands);
+        }
+
+        function renderLandTable(landsToRender) {
+            const tbody = selector('#land-list-body');
+            tbody.innerHTML = '';
+            landsToRender.forEach(land => {
+                const row = document.createElement('tr');
+                let statusClass = '';
+                if (land.status === 'Идэвхтэй') statusClass = 'status-active';
+                else if (land.status === 'Хүлээгдэж буй') statusClass = 'status-pending';
+                else if (land.status === 'Хугацаа дууссан') statusClass = 'status-expired';
+
+                row.innerHTML = `
+                    <td>${land.id}</td>
+                    <td>${land.location}</td>
+                    <td>${land.type}</td>
+                    <td>${land.area}</td>
+                    <td>${land.owner}</td>
+                    <td>${land.date}</td>
+                    <td class="${statusClass}">${land.status}</td>
+                    <td class="action-buttons">
+                        <button title="Дэлгэрэнгүй"><i class="fas fa-eye"></i></button>
+                        <button title="Засах"><i class="fas fa-edit"></i></button>
+                        <button title="Устгах"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Geree Section Data
+        const contractData = {
+            summary: {
+                total: 85,
+                active: 48,
+                pending: 15,
+                expired: 7
+            },
+            contracts: [
+                { id: 'C001', name: 'Барилгын төсөл А', client: 'XYZ ХХК', startDate: '2023-01-01', endDate: '2024-01-01', status: 'Идэвхтэй' },
+                { id: 'C002', name: 'Үйлчилгээний гэрээ Б', client: 'ABC Групп', startDate: '2023-03-15', endDate: '2023-09-15', status: 'Хугацаа дууссан' },
+                { id: 'C003', name: 'Зөвлөх үйлчилгээ', client: 'Монгол Банк', startDate: '2024-02-01', endDate: '2024-08-01', status: 'Идэвхтэй' },
+                { id: 'C004', name: 'Материалын нийлүүлэлт', client: 'Ганзам ХХК', startDate: '2024-05-20', endDate: '2025-05-20', status: 'Хүлээгдэж буй' },
+                { id: 'C005', name: 'Газрын гэрээ Z', client: 'Цогтбаяр', startDate: '2022-11-01', endDate: '2023-11-01', status: 'Хугацаа дууссан' },
+                { id: 'C006', name: 'Програм хангамжийн хөгжүүлэлт', client: 'Иноваци ХХК', startDate: '2024-01-10', endDate: '2024-12-31', status: 'Идэвхтэй' },
+            ]
+        };
+
+        function updateGereeDashboard() {
+            selector('#total-contracts').textContent = contractData.summary.total;
+            selector('#active-contracts-geree').textContent = contractData.summary.active;
+            selector('#pending-contracts').textContent = contractData.summary.pending;
+            selector('#expired-contracts').textContent = contractData.summary.expired;
+            renderContractTable(contractData.contracts);
+        }
+
+        function renderContractTable(contractsToRender) {
+            const tbody = selector('#contract-list-body');
+            tbody.innerHTML = '';
+            contractsToRender.forEach(contract => {
+                const row = document.createElement('tr');
+                let statusClass = '';
+                if (contract.status === 'Идэвхтэй') statusClass = 'status-active';
+                else if (contract.status === 'Хүлээгдэж буй') statusClass = 'status-pending';
+                else if (contract.status === 'Хугацаа дууссан') statusClass = 'status-expired';
+                else if (contract.status === 'Дууссан') statusClass = 'status-completed';
+
+                row.innerHTML = `
+                    <td>${contract.id}</td>
+                    <td>${contract.name}</td>
+                    <td>${contract.client}</td>
+                    <td>${contract.startDate}</td>
+                    <td>${contract.endDate}</td>
+                    <td class="${statusClass}">${contract.status}</td>
+                    <td>
+                        <button title="Дэлгэрэнгүй"><i class="fas fa-eye"></i></button>
+                        <button title="Засах"><i class="fas fa-edit"></i></button>
+                        <button title="Устгах"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Tolbor Section Data
+        let paymentsData = [
+            { id: 'P001', type: 'Түрээс', amount: 5000000, date: '2024-07-20', dueDate: '2024-07-25', status: 'Төлөгдсөн' },
+            { id: 'P002', type: 'Зээлийн төлбөр', amount: 1200000, date: '2024-07-10', dueDate: '2024-07-15', status: 'Хугацаа хэтэрсэн' },
+            { id: 'P003', type: 'Үйлчилгээний хөлс', amount: 800000, date: '2024-07-22', dueDate: '2024-07-30', status: 'Хүлээгдэж буй' },
+            { id: 'P004', type: 'Цалин', amount: 3000000, date: '2024-07-25', dueDate: '2024-07-25', status: 'Төлөгдсөн' },
+            { id: 'P005', type: 'Тавилга', amount: 1500000, date: '2024-07-18', dueDate: '2024-07-20', status: 'Төлөгдсөн' },
+            { id: 'P006', type: 'НДШ', amount: 450000, date: '2024-07-20', dueDate: '2024-07-25', status: 'Хугацаа хэтэрсэн' },
+            { id: 'P007', type: 'Интернет', amount: 80000, date: '2024-07-22', dueDate: '2024-07-30', status: 'Хүлээгдэж буй' },
+            { id: 'P008', type: 'Түрээс', amount: 5000000, date: '2024-06-20', dueDate: '2024-06-25', status: 'Төлөгдсөн' },
+            { id: 'P009', type: 'Зээлийн төлбөр', amount: 1200000, date: '2024-06-10', dueDate: '2024-06-15', status: 'Төлөгдсөн' },
+            { id: 'P010', type: 'Цалин', amount: 3000000, date: '2024-06-25', dueDate: '2024-06-25', status: 'Төлөгдсөн' },
+        ];
+        let currentPage = 1;
+        const rowsPerPage = 5;
+
+        function updateTolborDashboard() {
+            const totalIncome = paymentsData.filter(p => p.status === 'Төлөгдсөн').reduce((sum, p) => sum + p.amount, 0);
+            const pendingPayment = paymentsData.filter(p => p.status === 'Хүлээгдэж буй').reduce((sum, p) => sum + p.amount, 0);
+            const overduePayment = paymentsData.filter(p => p.status === 'Хугацаа хэтэрсэн').reduce((sum, p) => sum + p.amount, 0);
+            const refunds = 0; // Simulate, no refund data provided
+
+            selector('#total-income').textContent = `${formatNumber(totalIncome)}₮`;
+            selector('#pending-payment').textContent = `${formatNumber(pendingPayment)}₮`;
+            selector('#overdue-payment').textContent = `${formatNumber(overduePayment)}₮`;
+            selector('#refunds').textContent = `${formatNumber(refunds)}₮`;
+
+            applyPaymentFilters(); // Initial render
+        }
+
+        function applyPaymentFilters() {
+            const statusFilter = selector('#payment-filter-status').value;
+            const dateFilter = selector('#payment-filter-date').value;
+
+            let filtered = paymentsData.filter(payment => {
+                const statusMatch = statusFilter === 'all' || payment.status === (statusFilter === 'paid' ? 'Төлөгдсөн' : statusFilter === 'pending' ? 'Хүлээгдэж буй' : 'Хугацаа хэтэрсэн');
+                const dateMatch = !dateFilter || new Date(payment.date) >= new Date(dateFilter);
+                return statusMatch && dateMatch;
+            });
+            renderPaymentTable(filtered);
+        }
+
+        function renderPaymentTable(dataToRender) {
+            const tbody = selector('#payment-list-body');
+            tbody.innerHTML = '';
+            const totalPages = Math.ceil(dataToRender.length / rowsPerPage);
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = dataToRender.slice(start, end);
+
+            paginatedData.forEach(payment => {
+                const row = document.createElement('tr');
+                let statusClass = '';
+                if (payment.status === 'Төлөгдсөн') statusClass = 'status-paid';
+                else if (payment.status === 'Хүлээгдэж буй') statusClass = 'status-pending';
+                else if (payment.status === 'Хугацаа хэтэрсэн') statusClass = 'status-overdue';
+
+                row.innerHTML = `
+                    <td>${payment.id}</td>
+                    <td>${payment.type}</td>
+                    <td>${formatNumber(payment.amount)}₮</td>
+                    <td>${payment.date}</td>
+                    <td>${payment.dueDate}</td>
+                    <td class="${statusClass}">${payment.status}</td>
+                    <td>
+                        <button title="Дэлгэрэнгүй"><i class="fas fa-eye"></i></button>
+                        <button title="Засах"><i class="fas fa-edit"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            updatePaginationInfo(totalPages);
+        }
+
+        function updatePaginationInfo(totalPages) {
+            selector('#page-info-payment').textContent = `Хуудас ${currentPage}/${totalPages}`;
+            selector('#prev-page-payment').disabled = currentPage === 1;
+            selector('#next-page-payment').disabled = currentPage === totalPages;
+        }
+
+        selector('#prev-page-payment').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                applyPaymentFilters();
+            }
+        });
+
+        selector('#next-page-payment').addEventListener('click', () => {
+            const totalPages = Math.ceil(paymentsData.length / rowsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                applyPaymentFilters();
+            }
+        });
+
+        flatpickr("#payment-filter-date", {
+            dateFormat: "Y-m-d",
+            onChange: function(selectedDates, dateStr, instance) {
+                applyPaymentFilters();
+            }
+        });
+
+        // Tosol Section Data
+        const projectsDataTosol = {
+            summary: {
+                totalProjects: 21,
+                activeProjects: 15,
+                completedProjects: 4,
+                onHoldProjects: 2
+            },
+            projects: [
+                { id: 'T001', name: 'Хотын төвийн цогцолбор', startDate: '2023-01-10', endDate: '2025-12-31', status: 'Идэвхтэй', progress: 65 },
+                { id: 'T002', name: 'Шинэ үйлдвэрийн барилга', startDate: '2022-05-01', endDate: '2024-06-30', status: 'Дууссан', progress: 100 },
+                { id: 'T003', name: 'Оффисын шинэчлэл', startDate: '2024-03-01', endDate: '2024-09-30', status: 'Идэвхтэй', progress: 40 },
+                { id: 'T004', name: 'Амралтын цогцолбор', startDate: '2023-07-01', endDate: '2025-01-15', status: 'Идэвхтэй', progress: 80 },
+                { id: 'T005', name: 'Дэд бүтцийн төсөл', startDate: '2024-01-20', endDate: '2024-07-20', status: 'Түр зогсоосон', progress: 30 },
+            ]
+        };
+
+        function updateTosolDashboard() {
+            selector('#total-projects-tosol').textContent = projectsDataTosol.summary.totalProjects;
+            selector('#active-projects-tosol').textContent = projectsDataTosol.summary.activeProjects;
+            selector('#completed-projects-tosol').textContent = projectsDataTosol.summary.completedProjects;
+            selector('#on-hold-projects-tosol').textContent = projectsDataTosol.summary.onHoldProjects;
+            renderProjectTableTosol(projectsDataTosol.projects);
+        }
+
+        function renderProjectTableTosol(projectsToRender) {
+            const tbody = selector('#project-list-body');
+            tbody.innerHTML = '';
+            projectsToRender.forEach(project => {
+                const row = document.createElement('tr');
+                let statusClass = '';
+                if (project.status === 'Идэвхтэй') statusClass = 'status-active';
+                else if (project.status === 'Дууссан') statusClass = 'status-completed';
+                else if (project.status === 'Түр зогсоосон') statusClass = 'status-on-hold';
+                else if (project.status === 'Цуцлагдсан') statusClass = 'status-cancelled';
+
+                row.innerHTML = `
+                    <td>${project.id}</td>
+                    <td>${project.name}</td>
+                    <td>${project.startDate}</td>
+                    <td>${project.endDate}</td>
+                    <td class="${statusClass}">${project.status}</td>
+                    <td>
+                        <div class="progress-bar" style="width: 100px; height: 10px; background-color: var(--light-gray); border-radius: 5px;">
+                            <div class="progress-fill" style="width: ${project.progress}%; background-color: ${project.progress === 100 ? 'var(--success)' : 'var(--primary)'}; height: 100%; border-radius: 5px;"></div>
+                        </div>
+                        ${project.progress}%
+                    </td>
+                    <td>
+                        <button title="Дэлгэрэнгүй"><i class="fas fa-eye"></i></button>
+                        <button title="Засах"><i class="fas fa-edit"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+
+        // *** Main Initialization Function ***
+        function initializeSectionCharts(sectionId) {
+            switch (sectionId) {
+                case 'dashboard-section':
+                    initializeMainDashboardChart();
+                    fetchDataForDashboardCards();
+                    break;
+                case 'barilga-section':
+                    initializeProjectProgressChart();
+                    updateBarilgaMetrics();
+                    break;
+                case 'gazar-section':
+                    updateGazarDashboard();
+                    break;
+                case 'geree-section':
+                    initializeContractCharts();
+                    updateGereeDashboard();
+                    break;
+                case 'tolbor-section':
+                    initializePaymentChart();
+                    updateTolborDashboard();
+                    break;
+                case 'tosol-section':
+                    initializeProjectCharts();
+                    updateTosolDashboard();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Initialize default section on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialSection = window.location.hash ? window.location.hash.substring(1) : 'dashboard-section';
+            showSection(initialSection);
+
+            // Optional: Re-initialize on hash change (if direct links are used)
+            window.addEventListener('hashchange', () => {
+                const newSection = window.location.hash ? window.location.hash.substring(1) : 'dashboard-section';
+                showSection(newSection);
+            });
+        });
+
+        // Helper function for number formatting
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // Add event listeners for Gazar Section buttons (simulated actions)
+        selector('#add-land-btn').addEventListener('click', () => alert('Шинэ газрын мэдээлэл нэмэх форм нээгдэнэ'));
+        selector('#export-land-btn').addEventListener('click', () => alert('Газрын мэдээллийг excel файл болгон экспортлох'));
+        flatpickr("#filter-date", {
+            dateFormat: "Y-m-d",
+            onChange: function(selectedDates, dateStr, instance) {
+                applyFiltersGazar();
+            }
+        });
+        selector('#filter-type').addEventListener('change', applyFiltersGazar);
+
+        // Initialize construction charts
+function initializeConstructionCharts() {
+    // Progress chart
+    createChart('constructionProgressChart', 'bar', {
+        labels: ['Төсөл А', 'Төсөл Б', 'Төсөл В', 'Төсөл Г', 'Төсөл Д'],
+        datasets: [{
+            label: 'Явц (%)',
+            data: [85, 65, 45, 30, 90],
+            backgroundColor: [
+                'rgba(67, 97, 238, 0.7)',
+                'rgba(67, 97, 238, 0.7)',
+                'rgba(67, 97, 238, 0.7)',
+                'rgba(67, 97, 238, 0.7)',
+                'rgba(67, 97, 238, 0.7)'
+            ],
+            borderColor: [
+                'rgba(67, 97, 238, 1)',
+                'rgba(67, 97, 238, 1)',
+                'rgba(67, 97, 238, 1)',
+                'rgba(67, 97, 238, 1)',
+                'rgba(67, 97, 238, 1)'
+            ],
+            borderWidth: 1
+        }]
+    }, {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            }
+        }
+    });
+
+    // Status chart
+    createChart('constructionStatusChart', 'doughnut', {
+        labels: ['Идэвхтэй', 'Дууссан', 'Түр зогссон', 'Хүлээгдэж буй'],
+        datasets: [{
+            data: [15, 8, 2, 5],
+            backgroundColor: [
+                'rgba(76, 201, 240, 0.7)',
+                'rgba(67, 97, 238, 0.7)',
+                'rgba(248, 150, 30, 0.7)',
+                'rgba(108, 117, 125, 0.7)'
+            ],
+            borderColor: [
+                'rgba(76, 201, 240, 1)',
+                'rgba(67, 97, 238, 1)',
+                'rgba(248, 150, 30, 1)',
+                'rgba(108, 117, 125, 1)'
+            ],
+            borderWidth: 1
+        }]
+    }, {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            }
+        }
+    });
+}
+
+// Load construction data
+function loadConstructionData() {
+    // Sample data - in real app this would come from API
+    const projects = [
+        { 
+            name: 'Орон сууцны цогцолбор', 
+            startDate: '2023-01-15', 
+            endDate: '2024-06-30', 
+            progress: 65, 
+            status: 'active' 
+        },
+        { 
+            name: 'Оффисын барилга', 
+            startDate: '2023-03-10', 
+            endDate: '2023-12-15', 
+            progress: 90, 
+            status: 'active' 
+        },
+        { 
+            name: 'Дэд бүтцийн төсөл', 
+            startDate: '2022-11-01', 
+            endDate: '2023-09-30', 
+            progress: 100, 
+            status: 'completed' 
+        },
+        { 
+            name: 'Худалдааны төв', 
+            startDate: '2023-05-20', 
+            endDate: '2024-08-15', 
+            progress: 30, 
+            status: 'on-hold' 
+        },
+        { 
+            name: 'Сургуулийн барилга', 
+            startDate: '2023-02-01', 
+            endDate: '2023-08-31', 
+            progress: 100, 
+            status: 'completed' 
+        }
+    ];
+
+    // Render projects table
+    const tbody = document.getElementById('projects-list');
+    tbody.innerHTML = '';
+    
+    projects.forEach(project => {
+        const row = document.createElement('tr');
+        
+        let statusClass = '';
+        let statusText = '';
+        
+        switch(project.status) {
+            case 'active':
+                statusClass = 'status-active';
+                statusText = 'Идэвхтэй';
+                break;
+            case 'completed':
+                statusClass = 'status-completed';
+                statusText = 'Дууссан';
+                break;
+            case 'on-hold':
+                statusClass = 'status-on-hold';
+                statusText = 'Түр зогссон';
+                break;
+        }
+        
+        row.innerHTML = `
+            <td>${project.name}</td>
+            <td>${project.startDate}</td>
+            <td>${project.endDate}</td>
+            <td class="progress-cell">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${project.progress}%"></div>
+                </div>
+                <span>${project.progress}%</span>
+            </td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            <td>
+                <div class="action-buttons">
+                    <button class="action-btn" title="Дэлгэрэнгүй"><i class="fas fa-eye"></i></button>
+                    <button class="action-btn" title="Засах"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn" title="Устгах"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+}
+
+// Initialize when section is shown
+function initializeBarilgaSection() {
+    initializeConstructionCharts();
+    loadConstructionData();
+    // You would also load milestones timeline here
+}
+        
+    </script>
+</body>
+</html>
